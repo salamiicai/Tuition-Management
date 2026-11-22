@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
+<title>Push keys</title>
+<style>body{font-family:system-ui,sans-serif;max-width:640px;margin:40px auto;padding:0 16px;line-height:1.5}button{font:inherit;padding:12px 18px;border-radius:9px;border:0;background:#6D5EF5;color:#fff;font-weight:700;cursor:pointer}textarea{width:100%;min-height:90px;font-family:ui-monospace,monospace;font-size:.8rem;padding:8px;box-sizing:border-box}h3{margin:20px 0 4px}.warn{background:#fff1da;padding:10px;border-radius:9px}</style></head>
+<body>
+<h2>Create push notification keys</h2>
+<p>Creates a one-time key pair in <b>your browser</b>. Nothing is uploaded.</p>
+<button id="go">Generate keys</button>
+<div id="out" style="display:none">
+  <h3>1. PUBLIC key → <code>js/config.js</code> (VAPID_PUBLIC_KEY) and Worker variable <code>VAPID_PUBLIC</code></h3>
+  <textarea id="pub" readonly></textarea>
+  <h3>2. PRIVATE key → Worker <b>Secret</b> <code>VAPID_PRIVATE_JWK</code></h3>
+  <div class="warn">Keep this private. Never put it in your website files or share it. If you lose it, just generate a new pair (students will need to tap "Turn on notifications" again).</div>
+  <textarea id="priv" readonly></textarea>
+</div>
+<script>
+const b64u = b => btoa(String.fromCharCode(...new Uint8Array(b))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+document.getElementById('go').onclick = async () => {
+  const k = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']);
+  document.getElementById('pub').value = b64u(await crypto.subtle.exportKey('raw', k.publicKey));
+  const j = await crypto.subtle.exportKey('jwk', k.privateKey);
+  document.getElementById('priv').value = JSON.stringify({ kty: j.kty, crv: j.crv, x: j.x, y: j.y, d: j.d });
+  document.getElementById('out').style.display = 'block';
+};
+</script></body></html>

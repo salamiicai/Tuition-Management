@@ -25,22 +25,52 @@ service cloud.firestore {
       match /results/{id}   { allow read: if true; allow write: if isTeacher(); }
       match /nano/{id}      { allow read: if true; allow write: if isTeacher(); }
 
+      // Push addresses: the student's device may create/refresh its own; nobody but the teacher can read them.
+      match /push/{id} {
+        allow create, update: if request.resource.data.keys().hasOnly(['endpoint','p256dh','auth','ua','createdAt'])
+          && request.resource.data.endpoint is string && request.resource.data.endpoint.matches('https://.*') && request.resource.data.endpoint.size() < 600
+          && request.resource.data.p256dh is string && request.resource.data.p256dh.size() < 200
+          && request.resource.data.auth is string && request.resource.data.auth.size() < 100
+          && request.resource.data.ua is string && request.resource.data.ua.size() <= 130
+          && request.resource.data.createdAt == request.time;
+        allow read, delete: if isTeacher();
+      }
+
       match /attempts/{id} {
         allow read: if true;
         allow write: if isTeacher();
-        allow create: if validAttempt(token, request.resource.data);
+        allow create: if validAttempt(token, id, request.resource.data);   // one attempt per exam (doc id = exam id)
       }
     }
 
-    // Students may only create one attempt, capped by the exam's maxCredits.
-    function validAttempt(token, d) {
+    // Students may only create one attempt per exam, capped by the exam's maxCredits.
+    function validAttempt(token, id, d) {
       return d.keys().hasOnly(['examId','examTitle','correct','wrong','total','creditsEarned','wrongIds','submittedAt'])
-        && d.examId is string
-        && exists(/databases/$(database)/documents/studentViews/$(token)/nano/$(d.examId))
+        && d.examId == id
+        && exists(/databases/$(database)/documents/studentViews/$(token)/nano/$(id))
         && d.creditsEarned is int
         && d.creditsEarned >= 0
-        && d.creditsEarned <= get(/databases/$(database)/documents/studentViews/$(token)/nano/$(d.examId)).data.maxCredits
+        && d.creditsEarned <= get(/databases/$(database)/documents/studentViews/$(token)/nano/$(id)).data.maxCredits
+        && d.correct is int && d.wrong is int && d.total is int
+        && d.wrongIds is list && d.wrongIds.size() <= 100
         && d.submittedAt == request.time;
+    }
+
+    // Public student registration form → a pending request the teacher reviews.
+    function joinOpen() {
+      return get(/databases/$(database)/documents/public/teacher).data.get('joinOpen', false) == true;
+    }
+    match /joinRequests/{id} {
+      allow create: if joinOpen()
+        && request.resource.data.keys().hasOnly(['name','className','school','guardianNumber','waStudent','status','submittedAt'])
+        && request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 80
+        && request.resource.data.className in ['5','6','7','8','SSC','HSC','SAT']
+        && request.resource.data.school is string && request.resource.data.school.size() > 0 && request.resource.data.school.size() <= 100
+        && request.resource.data.guardianNumber is string && request.resource.data.guardianNumber.size() >= 6 && request.resource.data.guardianNumber.size() <= 20
+        && request.resource.data.waStudent is string && request.resource.data.waStudent.size() <= 20
+        && request.resource.data.status == 'pending'
+        && request.resource.data.submittedAt == request.time;
+      allow read, update, delete: if isTeacher();
     }
 
     // Everything else: teacher only.

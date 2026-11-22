@@ -9,6 +9,13 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
 <meta name="theme-color" content="#6D5EF5">
+<link rel="icon" type="image/svg+xml" href="icons/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+
 <script>try{var t=localStorage.getItem('ht_theme');document.documentElement.dataset.theme=t||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light')}catch(e){}</script>
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -16,7 +23,7 @@
 <body>
 <div class="center-wrap">
   <div class="card login-card" style="animation:rise .6s var(--ease) both">
-    <div class="logo"><i class="fas fa-atom"></i></div><h2 style="text-align:center">Welcome back, Sir</h2>
+    <img class="logo-img big" src="icons/icon-192.png" alt="" style="display:block;margin:0 auto 12px"><h2 style="text-align:center">Welcome back, Sir</h2>
     <p class="muted" style="text-align:center">Sign in from any device with your email.</p>
     <div id="warn" class="alert alert-warn hidden"></div>
     <div id="err" class="alert alert-err hidden"></div>

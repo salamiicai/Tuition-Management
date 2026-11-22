@@ -1,0 +1,20 @@
+{
+  "name": "Home Tutor – Teacher",
+  "short_name": "Tutor",
+  "description": "Students, classes, Nano exams and results in one place.",
+  "start_url": "app.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0E1020",
+  "theme_color": "#6D5EF5",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Add class day", "url": "app.html#attendance", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Nano exams", "url": "app.html#nano", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}
