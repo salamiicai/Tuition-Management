@@ -1,0 +1,8 @@
+{
+  "firestore": { "rules": "firestore.rules" },
+  "hosting": {
+    "public": ".",
+    "ignore": ["firebase.json", "firestore.rules", "README.md", "**/.*", "**/node_modules/**"],
+    "headers": [{ "source": "**", "headers": [{ "key": "Referrer-Policy", "value": "no-referrer" }] }]
+  }
+}

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex,nofollow">
+<title>Teacher login</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
+<meta name="theme-color" content="#6D5EF5">
+<script>try{var t=localStorage.getItem('ht_theme');document.documentElement.dataset.theme=t||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light')}catch(e){}</script>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<div class="center-wrap">
+  <div class="card login-card" style="animation:rise .6s var(--ease) both">
+    <div class="logo"><i class="fas fa-atom"></i></div><h2 style="text-align:center">Welcome back, Sir</h2>
+    <p class="muted" style="text-align:center">Sign in from any device with your email.</p>
+    <div id="warn" class="alert alert-warn hidden"></div>
+    <div id="err" class="alert alert-err hidden"></div>
+    <button id="google" class="btn btn-primary btn-block" style="margin-top:12px"><i class="fab fa-google"></i> Continue with Google</button>
+    <div class="divider">or get a sign-in link by email</div>
+    <label for="email" style="margin-top:0">Your email</label>
+    <input id="email" type="email" autocomplete="email" placeholder="you@gmail.com">
+    <button id="send" class="btn btn-block" style="margin-top:10px"><i class="fas fa-envelope"></i> Email me a sign-in link</button>
+    <p id="info" class="muted" style="margin-top:12px"></p>
+  </div>
+</div>
+<script type="module">
+import { auth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult,
+  sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink, signOut, onAuthStateChanged } from './js/firebase.js';
+import { ADMIN_EMAIL } from './js/config.js';
+
+const $ = id => document.getElementById(id);
+const showErr = m => { $('err').textContent = m; $('err').classList.remove('hidden'); };
+const admin = ADMIN_EMAIL.toLowerCase();
+if (admin.startsWith('your_email')) {
+  $('warn').textContent = 'Setup needed: put your email in js/config.js (ADMIN_EMAIL) and firestore.rules.';
+  $('warn').classList.remove('hidden');
+}
+const isAdmin = u => u && u.emailVerified && (u.email || '').toLowerCase() === admin;
+
+async function finish(user) {
+  if (isAdmin(user)) { location.replace('app.html'); return; }
+  await signOut(auth);
+  showErr('This account is not allowed to use the teacher dashboard.');
+}
+
+onAuthStateChanged(auth, u => { if (isAdmin(u)) location.replace('app.html'); });
+
+getRedirectResult(auth).then(r => r && finish(r.user)).catch(e => showErr(e.message));
+
+$('google').onclick = async () => {
+  try {
+    const r = await signInWithPopup(auth, new GoogleAuthProvider());
+    await finish(r.user);
+  } catch (e) {
+    if (['auth/popup-blocked', 'auth/operation-not-supported-in-this-environment', 'auth/cancelled-popup-request'].includes(e.code)) {
+      await signInWithRedirect(auth, new GoogleAuthProvider());
+    } else if (e.code !== 'auth/popup-closed-by-user') showErr(e.message);
+  }
+};
+
+$('send').onclick = async () => {
+  const email = $('email').value.trim().toLowerCase();
+  if (email !== admin) { showErr('Use the teacher email address.'); return; }
+  try {
+    await sendSignInLinkToEmail(auth, email, { url: new URL('login.html', location.href).href, handleCodeInApp: true });
+    localStorage.setItem('ht_email', email);
+    $('info').textContent = 'Link sent. Open it on this or any device (check spam too).';
+  } catch (e) { showErr(e.message); }
+};
+
+if (isSignInWithEmailLink(auth, location.href)) {
+  let email = localStorage.getItem('ht_email') || prompt('Confirm your email to finish signing in:') || '';
+  signInWithEmailLink(auth, email.trim().toLowerCase(), location.href)
+    .then(r => { localStorage.removeItem('ht_email'); return finish(r.user); })
+    .catch(e => showErr(e.message));
+}
+</script>
+</body>
+</html>

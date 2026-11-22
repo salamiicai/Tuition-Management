@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex,nofollow">
+<title>Teacher dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
+<meta name="theme-color" content="#6D5EF5">
+<script>try{var t=localStorage.getItem('ht_theme');document.documentElement.dataset.theme=t||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light')}catch(e){}</script>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<div id="boot" class="center-wrap"><div class="muted">Loading…</div></div>
+<div id="shell" class="shell hidden">
+  <aside class="rail">
+    <div class="brand"><span class="logo"><i class="fas fa-atom"></i></span><span id="brand2">Dashboard</span></div>
+    <div id="rnav" style="display:flex;flex-direction:column;gap:6px"></div>
+    <div class="spacer"></div>
+    <button class="nav-btn" id="theme2"><i class="fas fa-circle-half-stroke"></i> Theme</button>
+    <button class="nav-btn" id="logout2"><i class="fas fa-right-from-bracket"></i> Logout</button>
+  </aside>
+  <div class="main">
+    <header class="topbar"><div class="brand"><span class="logo"><i class="fas fa-atom"></i></span><span id="brand">Dashboard</span></div>
+      <button class="icon-btn" id="theme" aria-label="Theme"><i class="fas fa-circle-half-stroke"></i></button>
+      <button class="icon-btn" id="logout" aria-label="Logout"><i class="fas fa-right-from-bracket"></i></button></header>
+    <main class="page" id="view"></main>
+  </div>
+  <nav class="bottomnav" id="bnav"></nav>
+</div>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
