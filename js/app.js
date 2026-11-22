@@ -4,12 +4,16 @@ import { store, loadAll } from './store.js';
 import { toast } from './ui.js';
 import { esc } from './utils.js';
 import { toggleTheme } from './fx.js';
+import { registerSW } from './pwa.js';
+registerSW();
 
 const TABS = [
   ['overview', 'Home', 'fa-house', () => import('./tabs/overview.js')],
   ['students', 'Students', 'fa-user-group', () => import('./tabs/students.js')],
   ['attendance', 'Classes', 'fa-calendar-check', () => import('./tabs/attendance.js')],
   ['materials', 'Materials', 'fa-book-open', () => import('./tabs/materials.js')],
+  ['nano', 'Nano', 'fa-bolt', () => import('./tabs/nano.js')],
+  ['offline', 'Exams', 'fa-file-pen', () => import('./tabs/offline.js')],
   ['settings', 'Settings', 'fa-gear', () => import('./tabs/settings.js')]
 ];
 const $ = id => document.getElementById(id);
@@ -44,7 +48,7 @@ onAuthStateChanged(auth, async user => {
   $('brand').textContent = store.teacher.name || 'Teacher dashboard';
   $('brand2').textContent = $('brand').textContent;
   const navHtml = TABS.map(t => `<button class="nav-btn" data-k="${t[0]}"><i class="fas ${t[2]}"></i><span>${t[1]}</span></button>`).join('');
-  $('bnav').innerHTML = navHtml; $('rnav').innerHTML = navHtml;
+  $('bnav').innerHTML = TABS.filter(t => t[0] !== 'settings').map(t => `<button class="nav-btn" data-k="${t[0]}"><i class="fas ${t[2]}"></i><span>${t[1]}</span></button>`).join(''); $('rnav').innerHTML = navHtml;
   const go = e => { const k = e.target.closest('[data-k]')?.dataset.k; if (k) location.hash = '#' + k; };
   $('bnav').onclick = go; $('rnav').onclick = go;
   const out = async () => { await signOut(auth); location.replace('login.html'); };

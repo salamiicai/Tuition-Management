@@ -35,6 +35,13 @@ export async function exportBackup() {
     const snap = await getDocs(collection(db, name));
     collections[name] = snap.docs.map(d => ({ id: d.id, data: encode(d.data()) }));
   }
+  // exam attempts (credits) live under each student's private view, so include them
+  collections.attempts = [];
+  for (const s of collections.students) {
+    if (!s.data.token) continue;
+    const snap = await getDocs(collection(db, 'studentViews', s.data.token, 'attempts'));
+    snap.docs.forEach(d => collections.attempts.push({ id: `${s.data.token}/${d.id}`, data: encode(d.data()) }));
+  }
   return { format: 'home-tutor-backup', version: 1, exportedAt: new Date().toISOString(), collections };
 }
 
@@ -55,6 +62,10 @@ export async function importFile(obj, log = () => {}) {
 async function restoreBackup(obj, log) {
   const ops = [];
   for (const [name, docs] of Object.entries(obj.collections || {})) {
+    if (name === 'attempts') {
+      for (const { id, data } of docs) { const [tok, ex] = id.split('/'); ops.push({ type: 'set', ref: doc(db, 'studentViews', tok, 'attempts', ex), data: decode(data) }); }
+      log(`attempts: ${docs.length} documents`); continue;
+    }
     if (!BACKUP_COLLECTIONS.includes(name)) { log(`Skipped unknown collection "${name}"`); continue; }
     for (const { id, data } of docs) ops.push({ type: 'set', ref: doc(db, name, id), data: decode(data) });
     log(`${name}: ${docs.length} documents`);

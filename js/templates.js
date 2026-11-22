@@ -13,7 +13,7 @@ Class: {class}
 Dashboard link (private, please don't share):
 {link}
 
-- {teacher}`
+- {signature}`
   },
   monthStart: {
     label: 'New month started',
@@ -28,7 +28,7 @@ Class: {class}
 
 Dashboard: {link}
 
-- {teacher}`
+- {signature}`
   },
   monthEnd: {
     label: 'Month ended (summary)',
@@ -45,8 +45,53 @@ Dates: {dates}
 
 Dashboard: {link}
 
-- {teacher}`
+- {signature}`
   }
+};
+
+DEFAULT_TEMPLATES.material = {
+  label: 'New material shared',
+  vars: ['student', 'title', 'subject', 'type', 'description', 'link'],
+  text:
+`Assalamu Alaikum,
+
+New {type} for {student}:
+{title}
+Subject: {subject}
+{description}
+Open it on {student}'s dashboard:
+{link}
+
+- {signature}`
+};
+DEFAULT_TEMPLATES.nanoExam = {
+  label: 'New Nano exam',
+  vars: ['student', 'title', 'questions', 'minutes', 'points', 'examLink', 'link'],
+  text:
+`Assalamu Alaikum,
+
+A new Nano exam is ready for {student}:
+{title}
+Questions: {questions} · Time: {minutes} min
+Exam link: {examLink}
+
+Dashboard: {link}
+
+- {signature}`
+};
+DEFAULT_TEMPLATES.offlineResult = {
+  label: 'Offline exam result',
+  vars: ['student', 'title', 'subject', 'mcq', 'written', 'total', 'full', 'percent', 'link'],
+  text:
+`Assalamu Alaikum,
+
+Exam result of {student}
+{title} ({subject})
+{mcq}{written}Total: {total} / {full} ({percent}%)
+
+Progress: {link}
+
+- {signature}`
 };
 
 export const TEMPLATE_KEYS = Object.keys(DEFAULT_TEMPLATES);

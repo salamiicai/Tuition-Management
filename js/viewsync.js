@@ -5,6 +5,7 @@
 import { db, doc, collection, getDocs, writeBatch } from './firebase.js';
 import { emptyAttendance } from './utils.js';
 import { legacyResultDoc } from './convert.js';
+import { nanoSnapshot, offlineResultDoc, hasMarks } from './examsync.js';
 
 export const VIEW_SUBS = ['materials', 'results', 'nano', 'attempts'];
 
@@ -31,7 +32,7 @@ export function viewData(s) {
   };
 }
 export const materialViewData = m => ({
-  title: m.title, type: m.type, subject: m.subject || '', link: m.link, createdAt: m.createdAt || ''
+  title: m.title, type: m.type, subject: m.subject || '', description: m.description || '', link: m.link, createdAt: m.createdAt || ''
 });
 
 export const viewRef = (token, ...path) => doc(db, 'studentViews', token, ...path);
@@ -65,7 +66,7 @@ export async function deleteStudentView(token) {
 // Re-creates every student page from the master data. Safe to run any time.
 export async function rebuildAllViews(onProgress = () => {}) {
   const read = async name => (await getDocs(collection(db, name))).docs.map(d => ({ id: d.id, ...d.data() }));
-  const [students, materials, legacy] = await Promise.all([read('students'), read('materials'), read('legacySubmissions')]);
+  const [students, materials, legacy, nanoExams, offline, library] = await Promise.all([read('students'), read('materials'), read('legacySubmissions'), read('nanoExams'), read('offlineExams'), read('nanoQuestions')]);
   let n = 0;
   for (const s of students) {
     if (!s.token) continue;
@@ -79,6 +80,14 @@ export async function rebuildAllViews(onProgress = () => {}) {
 
     // results (old online exams for now; offline exams are added in the next phase)
     const wantR = new Map(legacy.filter(x => x.studentId === s.id).map(x => [x.id, legacyResultDoc(x)]));
+    offline.filter(e => (e.studentIds || []).includes(s.id) && hasMarks(e, (e.marks || {})[s.id]))
+      .forEach(e => wantR.set('offline_' + e.id, offlineResultDoc(e, e.marks[s.id])));
+
+    // nano exams
+    const wantN = new Map(nanoExams.filter(e => (e.studentIds || []).includes(s.id)).map(e => [e.id, nanoSnapshot(e, library)]));
+    (await getDocs(collection(db, 'studentViews', s.token, 'nano'))).docs
+      .forEach(d => { if (!wantN.has(d.id)) ops.push({ type: 'delete', ref: d.ref }); });
+    wantN.forEach((data, id) => ops.push({ type: 'set', ref: viewRef(s.token, 'nano', id), data }));
     (await getDocs(collection(db, 'studentViews', s.token, 'results'))).docs
       .forEach(d => { if (!wantR.has(d.id)) ops.push({ type: 'delete', ref: d.ref }); });
     wantR.forEach((data, id) => ops.push({ type: 'set', ref: viewRef(s.token, 'results', id), data }));
